@@ -47,7 +47,7 @@ function check_blocked(url){
 }
 
 function save_list(action, url) {
-  chrome.storage.sync.get({
+  chrome.storage.local.get({
     sync: 'sync',
     server: "https://www.example.com/list/"
   }, function (items){
@@ -86,7 +86,7 @@ function save_list(action, url) {
 }
 
 function load_list() {
-  chrome.storage.sync.get({
+  chrome.storage.local.get({
     sync: 'sync',
     server: "https://example.com"
   }, function (items){

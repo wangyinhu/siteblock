@@ -2,13 +2,14 @@
 function save_options() {
     var sync = document.getElementById('sync').value;
     var server = document.getElementById('server').value;
-    chrome.storage.sync.set({
+    chrome.storage.local.set({
         sync: sync,
         server: server
     }, function() {
         // Update status to let user know options were saved.
         var status = document.getElementById('status');
         status.textContent = 'Options saved.';
+        chrome.extension.getBackgroundPage().load_list();
         setTimeout(function() {
             status.textContent = '';
         }, 750);
@@ -19,7 +20,7 @@ function save_options() {
 // stored in chrome.storage.
 function restore_options() {
     // Use default value color = 'red' and likesColor = true.
-    chrome.storage.sync.get({
+    chrome.storage.local.get({
         sync: 'sync',
         server: "https://example.com"
     }, function(items) {
