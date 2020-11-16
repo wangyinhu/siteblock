@@ -21,16 +21,31 @@ function siteBlock() {
   });
 }
 
+function options() {
+    if (chrome.runtime.openOptionsPage) {
+        chrome.runtime.openOptionsPage();
+    } else {
+        window.open(chrome.runtime.getURL('options.html'));
+    }
+}
+
 chrome.tabs.query({active: true, lastFocusedWindow: true}, tabs => {
   let url = tabs[0].url;
   var button = $("#blacklistButton")
+  var opButton = $("#optionsButton")
 
-  if (!chrome.extension.getBackgroundPage().check_blocked(url)) {
+  if (chrome.extension.getBackgroundPage().check_blocked(url) === 'pass') {
+    button.disabled = false;
     button.click(siteBlock);
     button.text("block site");
-  } else {
+  } else if (chrome.extension.getBackgroundPage().check_blocked(url) === 'blockedSite'){
+    button.disabled = false;
     button.click(sitePass);
     button.text("Remove " + get_blocked_url(url) + " from the blocked list");
+  } else {
+    button.click(options);
+    button.text("hey!");
   }
+  opButton.click(options);
 });
 

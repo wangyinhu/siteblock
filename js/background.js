@@ -28,16 +28,20 @@ function check_blocked(url){
   console.log(url);
   console.log("url strip:");
   console.log(strip_url(url));
-  if(url.startsWith("chrome-extension://")){
-    return true;
+  if(url.startsWith("chrome-extension://") && url.includes("blockedSite.html")){
+    return 'blockedSite';
+  }
+
+  if(url.startsWith("chrome-extension://") || url.startsWith("chrome://")){
+    return 'chrome';
   }
 
   for(const i in blocked_urls){
     if(url.startsWith(blocked_urls[i])){
-      return true;
+      return 'blocked';
     }
   }
-  return false;
+  return 'pass';
 }
 
 function save_list() {
@@ -137,7 +141,7 @@ function rm_blocked(url){
 
 function requestChecker(request) {
   if (request && request.url && request.type === "main_frame") {
-    if (check_blocked(request.url)) {
+    if (check_blocked(request.url) === 'blocked') {
       var redirectUrl = chrome.extension.getURL(
           "blockedSite.html?blocked=" + request.url);
       return { redirectUrl: redirectUrl };
