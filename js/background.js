@@ -28,6 +28,8 @@ function check_blocked(url){
   console.log(url);
   console.log("url strip:");
   console.log(strip_url(url));
+  console.log("blocked_urls:");
+  console.log(blocked_urls);
   if(url.startsWith("chrome-extension://") && url.includes("blockedSite.html")){
     return 'blockedSite';
   }
@@ -44,7 +46,7 @@ function check_blocked(url){
   return 'pass';
 }
 
-function save_list() {
+function save_list(action, url) {
   chrome.storage.sync.get({
     sync: 'sync',
     server: "https://www.example.com/list/"
@@ -58,21 +60,25 @@ function save_list() {
         console.log("urls saved into local.");
       })
     } else if (items.sync === 'server'){
-      const url = items.server;
+      const server = items.server;
       const request = new XMLHttpRequest();
+      request.open("POST", server, true);
+      request.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
       request.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
       request.onreadystatechange = function() {
-        if (this.readyState === 4 && this.status === 200) {
-          var myArr = JSON.parse(this.responseText);
-          if(myArr.code === 'done'){
-            console.log("urls saved into server.");
+
+        if (this.readyState === 4 ){
+          if( this.status === 200) {
+            var myArr = JSON.parse(this.responseText);
+            if(myArr.code === 'done'){
+              console.log("urls saved into server.");
+            }
+          }else{
+            console.log("urls saving into server failed.");
           }
-        }else{
-          console.log("urls saving into server failed.");
         }
       };
-      request.open("POST", url, true);
-      request.send(JSON.stringify({'action': 'save', 'urls': blocked_urls}));
+      request.send(JSON.stringify({'action': action, 'urls': [url]}));
     } else {
       console.log("unknown 'sync' value.");
     }
@@ -101,21 +107,29 @@ function load_list() {
         console.log("urls loaded from local.");
       });
     } else if(items.sync === 'server'){
-      const url = items.server;
+      const server = items.server;
       const request = new XMLHttpRequest();
+      request.open("POST", server, true);
+      request.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
       request.setRequestHeader('Content-Type', 'application/json; charset=UTF-8');
       request.onreadystatechange = function() {
-        if (this.readyState === 4 && this.status === 200) {
-          var myArr = JSON.parse(this.responseText);
-          if(myArr.code === 'done'){
-            blocked_urls = myArr.urls;
-            console.log("urls loaded from server.");
+        if (this.readyState === 4 ) {
+          if (this.status === 200) {
+            var myArr = JSON.parse(this.responseText);
+            if (myArr.code === 'done') {
+              blocked_urls = myArr.urls;
+              console.log("urls loaded from server:");
+              console.log("blocked_urls");
+              console.log(blocked_urls);
+            }
+          } else {
+            console.log("this.readyState");
+            console.log(this.readyState);
+            console.log(this.responseText);
+            console.log("urls loading from server failed.");
           }
-        } else {
-          console.log("urls loading from server failed.");
         }
       };
-      request.open("POST", url, true);
       request.send(JSON.stringify({'action': 'query', 'urls': []}));
     } else {
       console.log("unknown 'sync' value.");
@@ -128,7 +142,7 @@ function add_blocked(url){
     return;
   }
   blocked_urls.push(strip_url(url));
-  save_list();
+  save_list('add', strip_url(url));
 }
 
 function rm_blocked(url){
@@ -136,7 +150,7 @@ function rm_blocked(url){
     return;
   }
   blocked_urls = removeUrlAll(blocked_urls, strip_url(url));
-  save_list();
+  save_list('remove', strip_url(url));
 }
 
 function requestChecker(request) {

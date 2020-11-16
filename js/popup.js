@@ -41,7 +41,8 @@ chrome.tabs.query({active: true, lastFocusedWindow: true}, tabs => {
   } else if (chrome.extension.getBackgroundPage().check_blocked(url) === 'blockedSite'){
     button.disabled = false;
     button.click(sitePass);
-    button.text("Remove " + get_blocked_url(url) + " from the blocked list");
+    var disp_url = chrome.extension.getBackgroundPage().strip_url(get_blocked_url(url))
+    button.text("Remove " + disp_url + " from the blocked list");
   } else {
     button.click(options);
     button.text("hey!");
