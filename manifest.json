@@ -32,7 +32,8 @@
     "storage",
     "webRequest",
     "webRequestBlocking",
-    "webNavigation"
+    "webNavigation",
+    "contextMenus"
   ],
   "incognito": "split"
 }
